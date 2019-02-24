@@ -1,6 +1,7 @@
 ﻿using Data.Interfaces;
 using Data.Models;
 using Forum.Data;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,9 +19,10 @@ namespace Service
             _context = context;
         }
 
-        public Task Add(Post post)
+        public async Task Add(Post post)
         {
-            throw new NotImplementedException();
+            _context.Add(post);
+            await _context.SaveChangesAsync();
         }
 
         public Task Delete(int id)
@@ -40,7 +42,12 @@ namespace Service
 
         public Post GetById(int id)
         {
-            throw new NotImplementedException();
+            return _context.Posts
+                .Where(p => p.Id == id)
+                .Include(p => p.User)
+                .Include(p => p.Replies).ThenInclude(r => r.User)
+                .Include(p => p.Forum)
+                .First();
         }
 
         public IEnumerable<Post> GetFilteredPosts(string searchQuery)

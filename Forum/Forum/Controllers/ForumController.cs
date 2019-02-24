@@ -49,6 +49,7 @@ namespace Forum.Controllers
             {
                 Id = p.Id,
                 AuthorId = p.User.Id,
+                AuthorName = p.User.UserName,
                 AuthorRating = p.User.Rating,
                 Title = p.Title,
                 DatePosted = p.Created.ToString(),

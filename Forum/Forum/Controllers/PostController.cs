@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Data.Interfaces;
 using Data.Models;
 using Forum.Models.Post;
 using Forum.Models.Reply;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Forum.Controllers
@@ -13,10 +15,14 @@ namespace Forum.Controllers
     public class PostController : Controller
     {
         private readonly IPostService _postService;
+        private readonly IForumService _forumService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public PostController(IPostService postService)
+        public PostController(IPostService postService, IForumService forumService, UserManager<ApplicationUser> userManager)
         {
             _postService = postService;
+            _forumService = forumService;
+            _userManager = userManager;
         }
 
         // GET: Post
@@ -59,28 +65,54 @@ namespace Forum.Controllers
         {
             return View();
         }
-
-        // GET: Post/Create
-        public ActionResult Create()
+        
+        public ActionResult Create(int id)
         {
-            return View();
+            var forum = _forumService.GetById(id);
+
+            var model = new NewPostViewModel
+            {
+                ForumName = forum.Title,
+                ForumId = forum.Id,
+                ForumImageUrl = forum.ImageUrl,
+                AuthorName = User.Identity.Name
+            };
+
+            return View(model);
         }
 
         // POST: Post/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<ActionResult> Create(NewPostViewModel model)
         {
             try
             {
-                // TODO: Add insert logic here
+                var userId = _userManager.GetUserId(User);
+                var user = await _userManager.FindByIdAsync(userId);
 
-                return RedirectToAction(nameof(Index));
+                var post = BuildPost(model, user);
+
+                await _postService.Add(post);
+                return RedirectToAction("Index", "Post", new { id = post.Id });
             }
             catch
             {
                 return View();
             }
+        }
+
+        private Post BuildPost(NewPostViewModel model, ApplicationUser user)
+        {
+            var forum = _forumService.GetById(model.ForumId);
+            return new Post
+            {
+                Title = model.Title,
+                Content = model.Content,
+                Created = DateTime.Now,
+                User = user,
+                Forum = forum
+            };
         }
 
         // GET: Post/Edit/5
