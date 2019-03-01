@@ -43,23 +43,31 @@ namespace Forum.Controllers
                 PostContent = post.Content,
                 Replies = replies,
                 ForumId = post.Forum.Id,
-                ForumName = post.Forum.Title
+                ForumName = post.Forum.Title,
+                IsAuthorAdmin = IsAuthorAdmin(post.User)
             };
             return View(model);
         }
-
+        
         private IEnumerable<PostReplyViewModel> BuildPostReplies(IEnumerable<PostReply> replies)
         {
             return replies.Select(r => new PostReplyViewModel
             {
                 Id = r.Id,
                 AuthorName = r.User.UserName,
-                AuthroId = r.User.Id,
+                AuthorId = r.User.Id,
                 AuthorImageUrl = r.User.ProfileImageUrl,
                 AuthorRating = r.User.Rating,
                 Created = r.Created,
-                ReplyContent = r.Content
+                ReplyContent = r.Content,
+                IsAuthorAdmin = IsAuthorAdmin(r.User)
             });
+        }
+
+        private bool IsAuthorAdmin(ApplicationUser user)
+        {
+            return _userManager.GetRolesAsync(user)
+                .Result.Contains("Admin");
         }
 
         // GET: Post/Details/5
