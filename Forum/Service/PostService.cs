@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Service
@@ -53,9 +52,14 @@ namespace Service
                 .First();
         }
 
-        public IEnumerable<Post> GetFilteredPosts(string searchQuery)
+        public IEnumerable<Post> GetFilteredPosts(ForumE forum, string searchQuery)
         {
-            throw new NotImplementedException();
+            var _forum = _context.Forums.Find(forum.Id);
+            return string.IsNullOrEmpty(searchQuery) 
+                ? forum.Posts 
+                : forum.Posts.Where(p 
+                    => p.Title.Contains(searchQuery)
+                    || p.Content.Contains(searchQuery));
         }
 
         public IEnumerable<Post> GetLatestPosts(int n)

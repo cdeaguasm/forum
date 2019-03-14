@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Data.Interfaces;
+﻿using Data.Interfaces;
 using Data.Models;
 using Forum.Models.Forum;
 using Forum.Models.Post;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Forum.Controllers
 {
@@ -39,11 +36,18 @@ namespace Forum.Controllers
 
             return View(model);
         }
-        
-        public ActionResult Topic(int id)
+
+        public IActionResult Search(int id, string searchQuery)
+        {
+            return RedirectToAction("Topic", new { id, searchQuery });
+        }
+
+        public ActionResult Topic(int id, string searchQuery)
         {
             var forum = _forumService.GetById(id);
-            var posts = _postService.GetPostsByForum(id);
+            var posts = new List<Post>();
+
+            posts = _postService.GetFilteredPosts(forum, searchQuery).ToList();
 
             var postListings = posts.Select(p => new PostListingViewModel
             {
@@ -65,7 +69,7 @@ namespace Forum.Controllers
 
             return View(model);
         }
-
+        
         private ForumListingViewModel BuildForumListing(Post post)
         {
             var forum = post.Forum;
@@ -81,75 +85,6 @@ namespace Forum.Controllers
                 Description = forum.Description,
                 ImageUrl = forum.ImageUrl
             };
-        }
-
-        // GET: Forum/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Forum/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
-        {
-            try
-            {
-                // TODO: Add insert logic here
-
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: Forum/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
-
-        // POST: Forum/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                // TODO: Add update logic here
-
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: Forum/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: Forum/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                // TODO: Add delete logic here
-
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
         }
     }
 }
