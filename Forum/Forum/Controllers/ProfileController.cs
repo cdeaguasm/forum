@@ -29,9 +29,18 @@ namespace Forum.Controllers
 
         public IActionResult Detail(string id)
         {
+            var user = _userService.GetById(id);
+            var userRoles = _userManager.GetRolesAsync(user).Result;
+
             var model = new ProfileViewModel()
             {
-
+                UserId = user.Id,
+                UserName = user.UserName,
+                UserRating = user.Rating.ToString(),
+                Email = user.Email,
+                ProfileImageUrl = user.ProfileImageUrl,
+                MemberSince = user.MemberSince,
+                IsAdmin = userRoles.Contains("Admin")
             };
 
             return View(model);

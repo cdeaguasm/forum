@@ -1,4 +1,5 @@
-﻿using Data.Interfaces;
+﻿using Data;
+using Data.Interfaces;
 using Data.Models;
 using Forum.Data;
 using Microsoft.AspNetCore.Builder;
@@ -42,10 +43,14 @@ namespace Forum
 
             services.AddScoped<IForumService, ForumService>();
             services.AddScoped<IPostService, PostService>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IUploadService, UploadService>();
+
+            services.AddTransient<DataSeeder>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, DataSeeder seeder)
         {
             if (env.IsDevelopment())
             {
@@ -57,6 +62,8 @@ namespace Forum
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
+
+            seeder.SeedSuperUser().Wait();
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
